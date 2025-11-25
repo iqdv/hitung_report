@@ -1,0 +1,81 @@
+
+import streamlit as st
+from datetime import date
+
+# Fungsi bantu
+def hitung_persentase(aktual, target):
+    return (aktual / target * 100) if target else 0
+
+def format_ribuan(nilai):
+    return f"{nilai:,}".replace(",", ".")
+
+# Judul Aplikasi
+st.title("📊 Laporan Sales & Fokus Mkt")
+
+# Input Umum
+shift = st.number_input("Shift (1/2/3):", min_value=1, max_value=3, step=1)
+tanggal = date.today()
+toko = st.text_input("Nama Toko:", value="KE53")
+
+# Target Data
+target_data = {
+    "sales": 8378500,
+    "voucher": 378500,
+    "psm": 82,
+    "pwp": 10,
+    "serba": 11,
+    "seger": 33,
+    "newmem": 2
+}
+
+st.subheader("Masukkan Data Aktual")
+aktual_data = {}
+for kategori in target_data:
+    aktual_data[kategori] = st.number_input(f"{kategori.upper()}:", min_value=0, step=1)
+
+# Input CEBAN
+ceban_actual = st.number_input("CEBAN:", min_value=0, step=1)
+
+# Kontribusi
+st.subheader("Masukkan Kontribusi")
+kontribusi = {
+    "konstribusi member": st.number_input("Konstribusi member report 47:", min_value=0, step=1),
+    "vcr jsm": st.number_input("Vcr JsM:", min_value=0, step=1),
+    "vcr susu hebat": st.number_input("Vcr susu hebat:", min_value=0, step=1),
+    "murah sejagat": st.number_input("Murah sejagat:", min_value=0, step=1),
+    "indonesia juara": st.number_input("Indonesia juara:", min_value=0, step=1),
+    "item jsm": st.number_input("Item JSM:", min_value=0, step=1)
+}
+
+# Tombol untuk tampilkan laporan
+if st.button("Tampilkan Laporan"):
+    laporan = f"""
+LAPORAN  sales & FOKUS \tMkt
+
+SHIFT  : {shift}
+TGL    : {tanggal}
+Toko   : {toko}
+                                
+          TARGET /ACT/ACH%
+
+Sales: {format_ribuan(target_data['sales'])} / {format_ribuan(aktual_data['sales'])} / {hitung_persentase(aktual_data['sales'], target_data['sales']):.2f}%
+Voucher: {format_ribuan(target_data['voucher'])} / {format_ribuan(aktual_data['voucher'])} / {hitung_persentase(aktual_data['voucher'], target_data['voucher']):.2f}%
+
+PSM: {format_ribuan(target_data['psm'])} / {format_ribuan(aktual_data['psm'])} / {hitung_persentase(aktual_data['psm'], target_data['psm']):.2f}%
+PWP: {format_ribuan(target_data['pwp'])} / {format_ribuan(aktual_data['pwp'])} / {hitung_persentase(aktual_data['pwp'], target_data['pwp']):.2f}%
+SERBA: {format_ribuan(target_data['serba'])} / {format_ribuan(aktual_data['serba'])} / {hitung_persentase(aktual_data['serba'], target_data['serba']):.2f}%
+
+SEGER: {format_ribuan(target_data['seger'])} / {format_ribuan(aktual_data['seger'])} / {hitung_persentase(aktual_data['seger'], target_data['seger']):.2f}%
+CEBAN: {format_ribuan(ceban_actual)}
+
+New Member: {format_ribuan(target_data['newmem'])} / {format_ribuan(aktual_data['newmem'])} / {hitung_persentase(aktual_data['newmem'], target_data['newmem']):.2f}%
+Kontribusi member report 47: {kontribusi['konstribusi member']}%
+Vcr JsM : {kontribusi['vcr jsm']}
+Vcr susu hebat: {kontribusi['vcr susu hebat']}
+Murah sejagat : {kontribusi['murah sejagat']}
+Indonesia juara: {kontribusi['indonesia juara']}
+Item JSM : {kontribusi['item jsm']}
+
+Terimakasih
+"""
+    st.text(laporan)
