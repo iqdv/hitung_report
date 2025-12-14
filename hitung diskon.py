@@ -7,10 +7,10 @@ def format_rupiah(x: float) -> str:
     return "Rp " + f"{x:,.0f}".replace(",", ".")
 
 # ---------- Pengaturan Halaman ----------
-st.set_page_config(page_title="Kalkulator Diskon", page_icon="🧮", layout="centered")
+st.set_page_config(page_title="FRESA DAPER HITUNG HARGA DISKON", page_icon="💎", layout="centered")
 
-st.title("🧮 Kalkulator Diskon")
-st.caption("Masukkan harga dan diskon untuk menghitung total bayar.")
+st.title("💎 FRESA DAPER HITUNG HARGA DISKON")
+st.caption("Masukkan harga dan diskon untuk menghitung total bayar dengan mudah.")
 
 # ---------- Input ----------
 with st.form("form_diskon"):
@@ -37,7 +37,6 @@ with st.form("form_diskon"):
 
 # ---------- Perhitungan & Output ----------
 if submit:
-    # Validasi sederhana
     if harga <= 0:
         st.error("Harga harus lebih dari 0.")
     elif not (0 <= diskon <= 100):
@@ -48,7 +47,6 @@ if submit:
 
         st.success("Perhitungan berhasil!")
 
-        # Ringkasan cepat
         c1, c2, c3 = st.columns(3)
         with c1:
             st.metric("Harga Awal", format_rupiah(harga))
@@ -58,18 +56,12 @@ if submit:
             st.metric("Potongan", format_rupiah(nilai_diskon))
 
         st.subheader("Total Bayar")
-        st.markdown(
-            f"""
-            ### {format_rupiah(total)}
-            """
-        )
+        st.markdown(f"### {format_rupiah(total)}")
 
-        # Detail breakdown
         with st.expander("Detail Perhitungan"):
             st.write(f"Harga awal  : {format_rupiah(harga)}")
             st.write(f"Diskon      : {diskon:.0f}%")
             st.write(f"Potongan    : {format_rupiah(nilai_diskon)}")
             st.write(f"Total bayar : **{format_rupiah(total)}**")
 
-# Footer tip
-st.caption("Tip: Ubah step input harga ke 1 jika ingin granularity per 1 rupiah.")
+
