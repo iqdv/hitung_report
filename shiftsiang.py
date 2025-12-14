@@ -89,17 +89,48 @@ for i, kat in enumerate(KATEGORI, start=1):  # Nomor urut mulai dari 1
     rows.append({
         "No": i,
         "Kategori": kat.upper(),
-        "Target": format_ribuan(tgt),
-        "S1": format_ribuan(s1),
-        "S2": format_ribuan(s2),
-        "S3": format_ribuan(s3),
-        "Total Aktual": format_ribuan(total_act),
-        "ACH%": f"{ach:.2f}%" if ach is not None else "-"
+        "Target": tgt,
+        "S1": s1,
+        "S2": s2,
+        "S3": s3,
+        "Total Aktual": total_act,
+        "ACH%": round(ach, 2) if ach is not None else None
     })
 
 df = pd.DataFrame(rows)
 
+# ==== Baris Total Keseluruhan ====
+sum_target = df["Target"].sum()
+sum_s1 = df["S1"].sum()
+sum_s2 = df["S2"].sum()
+sum_s3 = df["S3"].sum()
+sum_total_aktual = df["Total Aktual"].sum()
+ach_total = hitung_persentase(sum_total_aktual, sum_target)
+row_total = {
+    "No": "",
+    "Kategori": "TOTAL",
+    "Target": sum_target,
+    "S1": sum_s1,
+    "S2": sum_s2,
+    "S3": sum_s3,
+    "Total Aktual": sum_total_aktual,
+    "ACH%": round(ach_total, 2) if ach_total is not None else None
+}
+
+df_total = pd.concat([df, pd.DataFrame([row_total])], ignore_index=True)
+
+# ==== Format tampilan (ribuan & persen) ====
+df_tampil = df_total.copy()
+for col in ["Target", "S1", "S2", "S3", "Total Aktual"]:
+    df_tampil[col] = df_tampil[col].apply(format_ribuan)
+
+df_tampil["ACH%"] = df_tampil["ACH%"].apply(lambda x: f"{x:.2f}%" if isinstance(x, (int, float)) else "-")
+
+# ==== Tabel tanpa index ====
 st.write("---")
 st.subheader("📋 Tabel Pencapaian (Total = S1 + S2 + S3)")
-st.dataframe(df, use_container_width=True)
+st.dataframe(
+    df_tampil.style.hide(axis="index"),
+    use_container_width=True
+)
 
