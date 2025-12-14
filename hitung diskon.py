@@ -9,7 +9,7 @@ def format_rupiah(x: float) -> str:
 # ---------- Pengaturan Halaman ----------
 st.set_page_config(page_title="FRESA DAPER HITUNG HARGA DISKON", page_icon="💎", layout="centered")
 
-st.title("💎 FRESA DAPER HITUNG HARGA DISKON")
+st.title("FRESA DAPER HITUNG HARGA DISKON")
 st.caption("Masukkan harga dan diskon untuk menghitung total bayar dengan mudah.")
 
 # ---------- Input ----------
@@ -63,5 +63,6 @@ if submit:
             st.write(f"Diskon      : {diskon:.0f}%")
             st.write(f"Potongan    : {format_rupiah(nilai_diskon)}")
             st.write(f"Total bayar : **{format_rupiah(total)}**")
+
 
 
