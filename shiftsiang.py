@@ -53,11 +53,12 @@ for kat in KATEGORI:
 
 # Proses data
 rows = []
-for kat in KATEGORI:
+for i, kat in enumerate(KATEGORI, start=1):  # Nomor urut mulai dari 1
     tgt = target_data[kat]
     act = aktual_data[kat]
     ach = hitung_persentase(act, tgt)
     rows.append({
+        "No": i,
         "Kategori": kat.upper(),
         "Target": format_ribuan(tgt),
         "Aktual": format_ribuan(act),
@@ -69,3 +70,4 @@ df = pd.DataFrame(rows)
 st.write("---")
 st.subheader("📋 Tabel Pencapaian")
 st.dataframe(df, use_container_width=True)
+
