@@ -10,6 +10,17 @@ def hitung_persentase(aktual, target):
 def format_ribuan(nilai):
     return f"{int(nilai):,}".replace(",", ".")
 
+def parse_angka(teks):
+    if teks is None or teks == "":
+        return 0
+    return int(teks.replace(".", ""))
+
+def input_angka_titik(label, key):
+    teks = st.text_input(label, key=key)
+    angka = parse_angka(teks)
+    st.session_state[key] = format_ribuan(angka) if angka > 0 else ""
+    return angka
+
 # =========================
 # JUDUL APLIKASI
 # =========================
@@ -19,13 +30,13 @@ st.caption("by fresadaper | TikTok: @fresadaper03")
 # =========================
 # INPUT UMUM
 # =========================
-col_a, col_b, col_c = st.columns(3)
-with col_a:
+col1, col2, col3 = st.columns(3)
+with col1:
     shift = st.number_input("Shift", min_value=1, max_value=3, step=1)
-with col_b:
+with col2:
     tanggal = date.today()
     st.text_input("Tanggal", value=tanggal.strftime("%d-%m-%Y"), disabled=True)
-with col_c:
+with col3:
     toko = st.text_input("Nama Toko", value="KE53")
 
 # =========================
@@ -34,49 +45,51 @@ with col_c:
 st.subheader("Input Target & Actual (ACV)")
 
 kategori = [
-    ("sales", "Sales", 1000),
-    ("voucher", "Voucher", 1000),
-    ("psm", "PSM", 1),
-    ("pwp", "PWP", 1),
-    ("serba", "SERBA", 1),
-    ("seger", "SEGER", 1),
-    ("newmem", "New Member", 1),
+    ("sales", "Sales"),
+    ("voucher", "Voucher"),
+    ("psm", "PSM"),
+    ("pwp", "PWP"),
+    ("serba", "SERBA"),
+    ("seger", "SEGER"),
+    ("newmem", "New Member"),
 ]
 
 target_data = {}
 aktual_data = {}
 
-# Header kolom
-h1, h2, h3 = st.columns([2, 2, 1])
+# Header
+h1, h2, h3 = st.columns([2, 4, 4])
 h1.markdown("**Kategori**")
 h2.markdown("**Target**")
-h3.markdown("**Actual**")
+h3.markdown("**Actual (ACV)**")
 
-for key, label, step in kategori:
-    c1, c2, c3 = st.columns([2, 2, 1])
+for key, label in kategori:
+    c1, c2, c3 = st.columns([2, 4, 4])
     c1.write(label)
-    target_data[key] = c2.number_input(
-        "", min_value=0, step=step, key=f"t_{key}"
-    )
-    aktual_data[key] = c3.number_input(
-        "", min_value=0, step=step, key=f"a_{key}"
-    )
+
+    if key in ["sales", "voucher"]:
+        with c2:
+            target_data[key] = input_angka_titik("Target", f"t_{key}")
+        with c3:
+            aktual_data[key] = input_angka_titik("Actual", f"a_{key}")
+    else:
+        target_data[key] = c2.number_input("Target", min_value=0, step=1, key=f"t_{key}")
+        aktual_data[key] = c3.number_input("Actual", min_value=0, step=1, key=f"a_{key}")
 
 # =========================
 # INPUT TAMBAHAN
 # =========================
 st.subheader("Input Tambahan")
-
 ceban_actual = st.number_input("CEBAN", min_value=0, step=1)
 
 st.subheader("Kontribusi")
 kontribusi = {
-    "konstribusi member": st.number_input("Kontribusi Member Report 47 (%)", min_value=0, step=1),
-    "vcr jsm": st.number_input("VCR JSM", min_value=0, step=1),
-    "vcr susu hebat": st.number_input("VCR Susu Hebat", min_value=0, step=1),
-    "murah sejagat": st.number_input("Murah Sejagat", min_value=0, step=1),
-    "indonesia juara": st.number_input("Indonesia Juara", min_value=0, step=1),
-    "item jsm": st.number_input("Item JSM", min_value=0, step=1),
+    "member": st.number_input("Kontribusi Member Report 47 (%)", min_value=0, step=1),
+    "vcr_jsm": st.number_input("VCR JSM", min_value=0, step=1),
+    "vcr_susu": st.number_input("VCR Susu Hebat", min_value=0, step=1),
+    "murah": st.number_input("Murah Sejagat", min_value=0, step=1),
+    "juara": st.number_input("Indonesia Juara", min_value=0, step=1),
+    "item_jsm": st.number_input("Item JSM", min_value=0, step=1),
 }
 
 # =========================
@@ -105,12 +118,12 @@ CEBAN    : {ceban_actual}
 
 New Mem  : {target_data['newmem']} / {aktual_data['newmem']} / {hitung_persentase(aktual_data['newmem'], target_data['newmem']):.2f}%
 
-Kontribusi Member : {kontribusi['konstribusi member']}%
-VCR JSM           : {kontribusi['vcr jsm']}
-VCR Susu Hebat    : {kontribusi['vcr susu hebat']}
-Murah Sejagat     : {kontribusi['murah sejagat']}
-Indonesia Juara   : {kontribusi['indonesia juara']}
-Item JSM          : {kontribusi['item jsm']}
+Kontribusi Member : {kontribusi['member']}%
+VCR JSM           : {kontribusi['vcr_jsm']}
+VCR Susu Hebat    : {kontribusi['vcr_susu']}
+Murah Sejagat     : {kontribusi['murah']}
+Indonesia Juara   : {kontribusi['juara']}
+Item JSM          : {kontribusi['item_jsm']}
 
 Terima kasih
 
@@ -128,3 +141,4 @@ st.markdown(
     "<center>📱 TikTok : <b>@fresadaper03</b> | Made with ❤️ by <b>fresadaper</b></center>",
     unsafe_allow_html=True
 )
+
