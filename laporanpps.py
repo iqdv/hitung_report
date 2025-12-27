@@ -2,30 +2,16 @@ import streamlit as st
 from datetime import date
 
 # =========================
-# FUNGSI BANTU
+# FUNGSI
 # =========================
-def hitung_persentase(aktual, target):
-    return (aktual / target * 100) if target else 0
+def ach(act, tgt):
+    return (act / tgt * 100) if tgt > 0 else 0
 
-def format_ribuan(nilai):
-    return f"{int(nilai):,}".replace(",", ".")
-
-def ach_color(ach):
-    if ach >= 100:
-        return "🟢"
-    elif ach >= 80:
-        return "🟡"
-    else:
-        return "🔴"
-
-def input_angka_titik(label, key):
-    teks = st.text_input(label, key=key, placeholder="contoh: 8.378.500")
-    if teks:
-        return int(teks.replace(".", "").replace(",", ""))
-    return 0
+def ribuan(x):
+    return f"{int(x):,}".replace(",", ".")
 
 # =========================
-# JUDUL
+# HEADER
 # =========================
 st.title("📊 Laporan Sales & Fokus MKT")
 st.caption("by fresadaper | TikTok: @fresadaper03")
@@ -37,97 +23,78 @@ c1, c2, c3 = st.columns(3)
 with c1:
     shift = st.number_input("Shift", 1, 3, 1)
 with c2:
-    tanggal = date.today()
-    st.text_input("Tanggal", tanggal.strftime("%d-%m-%Y"), disabled=True)
+    tanggal = st.date_input("Tanggal", date.today())
 with c3:
-    toko = st.text_input("Nama Toko", "KE53")
+    toko = st.text_input("Toko", "KE53")
 
 # =========================
 # INPUT TARGET & ACTUAL
 # =========================
-st.subheader("Input Target & Actual (ACV)")
+st.subheader("Target & Actual")
 
-kategori = [
-    ("sales", "Sales"),
-    ("voucher", "Voucher"),
-    ("psm", "PSM"),
-    ("pwp", "PWP"),
-    ("serba", "SERBA"),
-    ("seger", "SEGER"),
-    ("newmem", "New Member"),
-]
+data = {
+    "Sales": {},
+    "Voucher": {},
+    "PSM": {},
+    "PWP": {},
+    "SERBA": {},
+    "SEGER": {},
+    "New Member": {}
+}
 
-target_data, aktual_data = {}, {}
+for k in data:
+    col1, col2 = st.columns(2)
+    with col1:
+        data[k]["t"] = st.number_input(f"Target {k}", 0, step=1)
+    with col2:
+        data[k]["a"] = st.number_input(f"Actual {k}", 0, step=1)
 
-h1, h2, h3 = st.columns([2, 4, 4])
-h1.markdown("**Kategori**")
-h2.markdown("**Target**")
-h3.markdown("**Actual (ACV)**")
-
-for key, label in kategori:
-    a, b, c = st.columns([2, 4, 4])
-    a.write(label)
-
-    if key in ["sales", "voucher"]:
-        with b:
-            target_data[key] = input_angka_titik("Target", f"t_{key}")
-        with c:
-            aktual_data[key] = input_angka_titik("Actual", f"a_{key}")
-    else:
-        target_data[key] = b.number_input("Target", min_value=0, step=1, key=f"t_{key}")
-        aktual_data[key] = c.number_input("Actual", min_value=0, step=1, key=f"a_{key}")
-
-# =========================
-# INPUT TAMBAHAN
-# =========================
-st.subheader("Input Tambahan")
 ceban = st.number_input("CEBAN", 0, step=1)
 
+st.subheader("Kontribusi")
+kontribusi = {
+    "member": st.number_input("Kontribusi member report 47 (%)", 0, step=1),
+    "jsm": st.number_input("Vcr JsM", 0, step=1),
+    "susu": st.number_input("Vcr susu hebat", 0, step=1),
+    "murah": st.number_input("Murah sejagat", 0, step=1),
+    "indo": st.number_input("Indonesia juara", 0, step=1),
+    "item": st.number_input("Item JSM", 0, step=1),
+}
+
 # =========================
-# TAMPILKAN LAPORAN
+# OUTPUT
 # =========================
 if st.button("📄 Tampilkan Laporan"):
-    ach = {}
-    for k in target_data:
-        ach[k] = hitung_persentase(aktual_data[k], target_data[k])
 
-    laporan = f"""
-LAPORAN SALES & FOKUS MKT
-SHIFT : {shift}
-TGL   : {tanggal}
-TOKO  : {toko}
+    laporan = f"""LAPORAN  sales & FOKUS 	Mkt
 
-TARGET / ACTUAL / ACH%
+SHIFT  : {shift}
+TGL    : {tanggal}
+Toko   : {toko}
 
-Sales    : {format_ribuan(target_data['sales'])} / {format_ribuan(aktual_data['sales'])} / {ach['sales']:.2f}% {ach_color(ach['sales'])}
-Voucher  : {format_ribuan(target_data['voucher'])} / {format_ribuan(aktual_data['voucher'])} / {ach['voucher']:.2f}% {ach_color(ach['voucher'])}
+          TARGET /ACT/ACH%
 
-PSM      : {target_data['psm']} / {aktual_data['psm']} / {ach['psm']:.2f}% {ach_color(ach['psm'])}
-PWP      : {target_data['pwp']} / {aktual_data['pwp']} / {ach['pwp']:.2f}% {ach_color(ach['pwp'])}
-SERBA    : {target_data['serba']} / {aktual_data['serba']} / {ach['serba']:.2f}% {ach_color(ach['serba'])}
-SEGER    : {target_data['seger']} / {aktual_data['seger']} / {ach['seger']:.2f}% {ach_color(ach['seger'])}
+Sales: {ribuan(data['Sales']['t'])} / {ribuan(data['Sales']['a'])} / {ach(data['Sales']['a'], data['Sales']['t']):.2f}%
+Voucher: {ribuan(data['Voucher']['t'])} / {ribuan(data['Voucher']['a'])} / {ach(data['Voucher']['a'], data['Voucher']['t']):.2f}%
 
-CEBAN    : {ceban}
+PSM: {data['PSM']['t']} / {data['PSM']['a']} / {ach(data['PSM']['a'], data['PSM']['t']):.2f}%
+PWP: {data['PWP']['t']} / {data['PWP']['a']} / {ach(data['PWP']['a'], data['PWP']['t']):.2f}%
+SERBA: {data['SERBA']['t']} / {data['SERBA']['a']} / {ach(data['SERBA']['a'], data['SERBA']['t']):.2f}%
 
-New Mem  : {target_data['newmem']} / {aktual_data['newmem']} / {ach['newmem']:.2f}% {ach_color(ach['newmem'])}
+SEGER: {data['SEGER']['t']} / {data['SEGER']['a']} / {ach(data['SEGER']['a'], data['SEGER']['t']):.2f}%
+CEBAN: {ceban}
 
-By : fresadaper
-TikTok : @fresadaper03
+New Member: {data['New Member']['t']} / {data['New Member']['a']} / {ach(data['New Member']['a'], data['New Member']['t']):.2f}%
+Kontribusi member report 47: {kontribusi['member']}%
+Vcr JsM : {kontribusi['jsm']}
+Vcr susu hebat: {kontribusi['susu']}
+Murah sejagat : {kontribusi['murah']}
+Indonesia juara: {kontribusi['indo']}
+Item JSM : {kontribusi['item']}
+
+Terimakasih
 """
 
-    st.text(laporan)
+    st.code(laporan, language="text")  # ada tombol COPY
 
-    st.text_area(
-        "📋 Salin laporan ini → paste ke WhatsApp",
-        laporan,
-        height=350
-    )
 
-# =========================
-# FOOTER
-# =========================
-st.markdown("---")
-st.markdown(
-    "<center>📱 TikTok : <b>@fresadaper03</b> | Made with ❤️ by <b>fresadaper</b></center>",
-    unsafe_allow_html=True
-)
