@@ -1,159 +1,171 @@
 
 import streamlit as st
 from datetime import date
-from math import floor
+import pandas as pd
 
 # ===== Fungsi bantu =====
+def hitung_persentase(aktual, target):
+    if target == 0:
+        return 0.0
+    return (aktual / target) * 100
+
 def format_ribuan(nilai):
-    """Format angka ke ribuan dengan titik (8.378.500)"""
     try:
-        return f"{int(round(nilai)):,}".replace(",", ".")
-    except Exception:
+        return f"{int(nilai):,}".replace(",", ".")
+    except:
         return str(nilai)
 
-def hitung_act_dari_acv(target, acv_persen):
-    """Hitung ACT = target * (acv/100)"""
-    if target is None or acv_persen is None:
-        return 0
-    return round(target * (acv_persen / 100.0), 0)
+st.set_page_config(page_title="Laporan Sales & Fokus Mkt", layout="wide")
 
-# ===== Judul & info umum =====
-st.title("📊 Laporan Sales & Fokus Mkt by FRESADAPER")
-st.caption("Input berurutan: Target (atas) → ACV (%)(bawah). ACT dihitung otomatis dari ACV.")
+# ===== Judul Aplikasi =====
+st.title("📊 Laporan Sales & Fokus Mkt")
 
-with st.form("form_laporan"):
-    # Header umum
-    cols_info = st.columns(3)
-    with cols_info[0]:
-        shift = st.number_input("Shift (1/2/3)", min_value=1, max_value=3, step=1, value=1)
-    with cols_info[1]:
-        tanggal = date.today()
-        st.text_input("Tanggal", value=str(tanggal), disabled=True)
-    with cols_info[2]:
-        toko = st.text_input("Nama Toko", value="KE53")
+# ===== Input Umum =====
+col_info1, col_info2, col_info3 = st.columns([1,1,2])
+with col_info1:
+    shift = st.number_input("Shift (1/2/3):", min_value=1, max_value=3, step=1, value=1)
+with col_info2:
+    tanggal = st.date_input("Tanggal:", value=date.today())
+with col_info3:
+    toko = st.text_input("Nama Toko:", value="KE53")
 
-    st.divider()
-    st.subheader("🎯 Target & ACV (%) — diisi berurutan (Target di atas, ACV di bawah)")
+st.markdown("---")
 
-    # Helper untuk render pasangan input target/acv
-    def pair_target_acv(label, default_target=0, default_acv=0.0):
-        st.markdown(f"**{label}**")
-        target = st.number_input(f"Target {label}", min_value=0, step=1, value=int(default_target), key=f"t_{label}")
-        acv = st.number_input(f"ACV {label} (%)", min_value=0.0, max_value=500.0, step=0.1, value=float(default_acv), key=f"a_{label}")
-        st.write("")  # spacer kecil
-        return target, acv
+# ===== Daftar kategori dasar =====
+kategori_list = ["sales", "voucher", "psm", "pwp", "serba", "seger", "newmem"]
 
-    # Urutan input: setiap KPI target lalu ACV
-    sales_t, sales_acv = pair_target_acv("Sales", 8_378_500, 0.0)
-    voucher_t, voucher_acv = pair_target_acv("Voucher", 378_500, 0.0)
-    psm_t, psm_acv       = pair_target_acv("PSM", 82, 0.0)
-    pwp_t, pwp_acv       = pair_target_acv("PWP", 10, 0.0)
-    serba_t, serba_acv   = pair_target_acv("SERBA", 11, 0.0)
-    seger_t, seger_acv   = pair_target_acv("SEGER", 33, 0.0)
-    newmem_t, newmem_acv = pair_target_acv("New Member", 2, 0.0)
+# ===== Input Target & Aktual (berdampingan) =====
+st.subheader("Masukkan Target & Aktual per Kategori")
+col_target, col_aktual = st.columns(2)
 
-    st.divider()
+# Default target (boleh diedit user)
+default_target = {
+    "sales": 8_378_500,
+    "voucher": 378_500,
+    "psm": 82,
+    "pwp": 10,
+    "serba": 11,
+    "seger": 33,
+    "newmem": 2
+}
 
-    # Input CEBAN & Kontribusi
-    ceban_actual = st.number_input("CEBAN (Aktual)", min_value=0, step=1, value=0)
+target_data = {}
+aktual_data = {}
 
-    st.subheader("Kontribusi")
-    kontribusi_member = st.number_input("Konstribusi member report 47 (%)", min_value=0.0, step=0.1, value=0.0)
-    vcr_jsm           = st.number_input("Vcr JsM", min_value=0, step=1, value=0)
-    vcr_susu_hebat    = st.number_input("Vcr susu hebat", min_value=0, step=1, value=0)
-    murah_sejagat     = st.number_input("Murah sejagat", min_value=0, step=1, value=0)
-    indonesia_juara   = st.number_input("Indonesia juara", min_value=0, step=1, value=0)
-    item_jsm          = st.number_input("Item JSM", min_value=0, step=1, value=0)
+with col_target:
+    st.caption("🎯 Target")
+    for k in kategori_list:
+        target_data[k] = st.number_input(
+            f"Target {k.upper()}:", min_value=0.0, step=1.0, value=float(default_target.get(k, 0))
+        )
 
-    submit = st.form_submit_button("Tampilkan Laporan")
+with col_aktual:
+    st.caption("✅ Aktual (Tercapai)")
+    for k in kategori_list:
+        aktual_data[k] = st.number_input(
+            f"Aktual {k.upper()}:", min_value=0.0, step=1.0, value=0.0
+        )
 
-# ===== Setelah submit: buat laporan =====
-if submit:
-    # Hitung ACT dari ACV
-    sales_act   = hitung_act_dari_acv(sales_t, sales_acv)
-    voucher_act = hitung_act_dari_acv(voucher_t, voucher_acv)
-    psm_act     = hitung_act_dari_acv(psm_t, psm_acv)
-    pwp_act     = hitung_act_dari_acv(pwp_t, pwp_acv)
-    serba_act   = hitung_act_dari_acv(serba_t, serba_acv)
-    seger_act   = hitung_act_dari_acv(seger_t, seger_acv)
-    newmem_act  = hitung_act_dari_acv(newmem_t, newmem_acv)
+# ===== Input CEBAN & Kontribusi =====
+st.subheader("Masukkan CEBAN & Kontribusi")
+col_c1, col_c2, col_c3 = st.columns(3)
+with col_c1:
+    ceban_actual = st.number_input("CEBAN:", min_value=0.0, step=1.0, value=0.0)
 
-    # Bentuk laporan teks
-    laporan = f"""
-LAPORAN  sales & FOKUS \tMkt
+with col_c2:
+    kontribusi_member = st.number_input("Kontribusi member report 47 (%):", min_value=0.0, step=0.1, value=0.0)
+    vcr_jsm = st.number_input("Vcr JSM:", min_value=0.0, step=1.0, value=0.0)
+    vcr_susu_hebat = st.number_input("Vcr susu hebat:", min_value=0.0, step=1.0, value=0.0)
+
+with col_c3:
+    murah_sejagat = st.number_input("Murah sejagat:", min_value=0.0, step=1.0, value=0.0)
+    indonesia_juara = st.number_input("Indonesia juara:", min_value=0.0, step=1.0, value=0.0)
+    item_jsm = st.number_input("Item JSM:", min_value=0.0, step=1.0, value=0.0)
+
+st.markdown("---")
+
+# ===== Tampilkan Laporan (tabel sisi-sisi) =====
+if st.button("Tampilkan Laporan"):
+    # Susun dataframe ringkas Target vs Aktual vs Ach%
+    rows = []
+    for k in kategori_list:
+        target_val = target_data[k]
+        aktual_val = aktual_data[k]
+        ach = hitung_persentase(aktual_val, target_val)
+        rows.append({
+            "Kategori": k.upper(),
+            "Target": target_val,
+            "Aktual": aktual_val,
+            "Ach (%)": round(ach, 2)
+        })
+    df = pd.DataFrame(rows)
+
+    # Header info
+    st.markdown(f"""
+    **LAPORAN Sales & Fokus Mkt**  
+    **SHIFT**: {shift} &nbsp;&nbsp; | &nbsp;&nbsp; **TGL**: {tanggal} &nbsp;&nbsp; | &nbsp;&nbsp; **Toko**: {toko}
+    """)
+
+    # Tabel utama (Target & Aktual berdampingan)
+    st.subheader("Ringkasan Target vs Aktual")
+    st.dataframe(
+        df.style.format({
+            "Target": lambda x: format_ribuan(x),
+            "Aktual": lambda x: format_ribuan(x),
+            "Ach (%)": "{:.2f}"
+        }),
+        use_container_width=True
+    )
+
+    # Seksi detail tambahan
+    st.subheader("Detail Tambahan")
+    col_d1, col_d2 = st.columns([1,1])
+    with col_d1:
+        st.markdown(f"**CEBAN:** {format_ribuan(ceban_actual)}")
+    with col_d2:
+        st.markdown(f"""
+        **Kontribusi:**
+        - Kontribusi member report 47: **{kontribusi_member:.2f}%**
+        - Vcr JSM: **{format_ribuan(vcr_jsm)}**
+        - Vcr susu hebat: **{format_ribuan(vcr_susu_hebat)}**
+        - Murah sejagat: **{format_ribuan(murah_sejagat)}**
+        - Indonesia juara: **{format_ribuan(indonesia_juara)}**
+        - Item JSM: **{format_ribuan(item_jsm)}**
+        """)
+
+    # Opsi ekspor teks rapi (opsional)
+    st.markdown("---")
+    st.caption("📋 Salin teks laporan (opsional)")
+    laporan_txt = f"""
+LAPORAN Sales & Fokus Mkt
 
 SHIFT  : {shift}
 TGL    : {tanggal}
 Toko   : {toko}
 
-          TARGET / ACT / ACH%
+TARGET / AKTUAL / ACH%
 
-Sales   : {format_ribuan(sales_t)} / {format_ribuan(sales_act)} / {sales_acv:.2f}%
-Voucher : {format_ribuan(voucher_t)} / {format_ribuan(voucher_act)} / {voucher_acv:.2f}%
+"""[1:]  # Hapus newline pertama
 
-PSM     : {format_ribuan(psm_t)} / {format_ribuan(psm_act)} / {psm_acv:.2f}%
-PWP     : {format_ribuan(pwp_t)} / {format_ribuan(pwp_act)} / {pwp_acv:.2f}%
-SERBA   : {format_ribuan(serba_t)} / {format_ribuan(serba_act)} / {serba_acv:.2f}%
+    for k in kategori_list:
+        laporan_txt += (
+            f"{k.upper()}: "
+            f"{format_ribuan(target_data[k])} / "
+            f"{format_ribuan(aktual_data[k])} / "
+            f"{hitung_persentase(aktual_data[k], target_data[k]):.2f}%\n"
+        )
 
-SEGER   : {format_ribuan(seger_t)} / {format_ribuan(seger_act)} / {seger_acv:.2f}%
-CEBAN   : {format_ribuan(ceban_actual)}
-
-New Member: {format_ribuan(newmem_t)} / {format_ribuan(newmem_act)} / {newmem_acv:.2f}%
+    laporan_txt += f"""
+CEBAN: {format_ribuan(ceban_actual)}
 
 Kontribusi member report 47: {kontribusi_member:.2f}%
-Vcr JsM             : {vcr_jsm}
-Vcr susu hebat      : {vcr_susu_hebat}
-Murah sejagat       : {murah_sejagat}
-Indonesia juara     : {indonesia_juara}
-Item JSM            : {item_jsm}
+Vcr JSM : {format_ribuan(vcr_jsm)}
+Vcr susu hebat: {format_ribuan(vcr_susu_hebat)}
+Murah sejagat : {format_ribuan(murah_sejagat)}
+Indonesia juara: {format_ribuan(indonesia_juara)}
+Item JSM : {format_ribuan(item_jsm)}
 
-Terimakasih
-""".strip()
+Terima kasih
+"""[1:]
 
-    # Tampilkan teks laporan standar
-    st.text(laporan)
-
-    # ===== Menu Copy Text Laporan (HTML + JS) =====
-    st.markdown(
-        f"""
-<div style="margin-top: 12px; margin-bottom: 6px;">
-  <label style="font-weight:600;">📋 Salin / Edit Laporan:</label>
-  <textarea id="laporan_textarea" rows="18" style="width:100%; font-family: monospace; font-size: 13px;">{laporan}</textarea>
-  <button id="copy_btn" style="margin-top:8px; padding:6px 10px; cursor:pointer;">📋 Copy</button>
-  <span id="copy_status" style="margin-left:8px; color:green;"></span>
-</div>
-<script>
-const btn = document.getElementById('copy_btn');
-const ta  = document.getElementById('laporan_textarea');
-const statusEl = document.getElementById('copy_status');
-
-btn.addEventListener('click', async () => {{
-  try {{
-    if (navigator.clipboard && navigator.clipboard.writeText) {{
-      await navigator.clipboard.writeText(ta.value);
-    }} else {{
-      ta.select();
-      ta.setSelectionRange(0, ta.value.length);
-      document.execCommand('copy');
-    }}
-    statusEl.textContent = 'Tersalin!';
-    statusEl.style.color = 'green';
-    setTimeout(() => {{ statusEl.textContent = ''; }}, 1500);
-  }} catch (err) {{
-    statusEl.textContent = 'Gagal menyalin';
-    statusEl.style.color = 'red';
-    console.error(err);
-  }}
-}});
-</script>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # Tombol download .txt
-    st.download_button(
-        label="⬇️ Download Laporan (.txt)",
-        data=laporan,
-        file_name=f"laporan_sales_{toko}_{tanggal}.txt",
-        mime="text/plain",
-    )
+    st.text_area("Teks Laporan:", value=laporan_txt, height=260)
