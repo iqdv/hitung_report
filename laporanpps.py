@@ -169,3 +169,4 @@ Terima kasih
 """[1:]
 
     st.text_area("Teks Laporan:", value=laporan_txt, height=260)
+
