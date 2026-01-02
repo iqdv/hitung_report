@@ -336,4 +336,3 @@ else:
     persen = hitung_persen(targettoko, actualtoko)
 
     st.write(f"ACHIVE = {format_persen(persen)}")
-``
