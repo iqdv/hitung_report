@@ -2,9 +2,7 @@
 import streamlit as st
 import datetime
 
-# =========================
-# Utilitas umum
-# =========================
+# ========== UTILITAS ==========
 def hitung_persen(target, actual):
     return (actual / target * 100.0) if target else 0.0
 
@@ -19,32 +17,25 @@ def format_rupiah(n):
         return "Rp 0"
 
 def format_ribuan(nilai):
-    # cocok untuk angka tanpa "Rp"
     return f"{int(nilai):,}".replace(",", ".")
 
 def format_tanggal_id(d: datetime.date):
     bulan_id = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        "Januari","Februari","Maret","April","Mei","Juni",
+        "Juli","Agustus","September","Oktober","November","Desember"
     ]
     return f"{d.day:02d} {bulan_id[d.month-1]} {d.year}"
 
 st.set_page_config(page_title="Performance & Fokus Cabang", layout="centered")
-
-# =========================
-# Sidebar untuk memilih menu
-# =========================
 st.sidebar.title("Menu")
-menu = st.sidebar.radio(
-    "Pilih Menu:",
-    ["1. Laporan FOKUS ALL SHIFT PER HARI", "2. Laporan Sales & Fokus Mkt", "3. Menghitung Persentase"]
-)
-
+menu = st.sidebar.radio("Pilih Menu:", [
+    "1. Laporan FOKUS ALL SHIFT PER HARI",
+    "2. Laporan Sales & Fokus Mkt",
+    "3. Menghitung Persentase"
+])
 st.title("FORM PERFORMANCE & FOCUS CABANG CIKOKOL")
 
-# =========================
-# MENU 1
-# =========================
+# ========== MENU 1 ==========
 if menu.startswith("1"):
     st.subheader("Laporan FOKUS ALL SHIFT PER HARI (Template Lengkap)")
 
@@ -139,97 +130,93 @@ if menu.startswith("1"):
     a_fb = st.number_input("ACTUAL FEE BASED (Rp)", min_value=0.0, step=1000.0, format="%.0f")
     ach_fb = hitung_persen(t_fb, a_fb)
 
-    # Build output teks persis template
-    output_text = f"""*PERFORMANCE & FOCUS CABANG CIKOKOL*\t
-TGL : \t{format_tanggal_id(tgl)}
-
-KODE : {kode}
-TOKO : {toko}
-
-*REVENUE*\t
-*1.NET SALES*\t
-TARGET :\t{format_rupiah(target_sales)}
-ACTUAL :\t{format_rupiah(actual_sales)}
-ACHIVE :\t{format_persen(sales_achive)}
-GAP TO TARGET :\t{format_rupiah(sales_gap)}
-
-*2.PSM*\t
-*{week_psm}*\t
-TARGET :\t{t_psm:g}
-ACTUAL :\t{a_psm:g}
-ACHIVE :\t{format_persen(ach_psm)}
-
-*3.PWP*\t
-*{periode_pwp}*\t
-TARGET :\t{t_pwp:g}
-ACTUAL :\t{a_pwp:g}
-ACHIVE :\t{format_persen(ach_pwp)}
-
-*4.SERTIS*\t
-*{periode_sertis}*\t
-TARGET :\t{t_sertis:g}
-ACTUAL :\t{a_sertis:g}
-ACHIVE :\t{format_persen(ach_sertis)}
---------------------------------\t
-*INVENTORY*\t
-*5.PL*\t
-BUDGET ( 0,14% ) Rp :\t{format_rupiah(b_pl)}
-ACTUAL Rp :\t{format_rupiah(a_pl)}
-*6.BR,BKE*\t
-BUDGET (0,30) Rp :\t{format_rupiah(b_br)}
-ACTUAL Rp :\t{format_rupiah(a_br)}
---------------------------------\t
-*FOCUS CABANG*\t
-*7.TELUR*\t
-TARGET :\t{t_telur:g}
-ACTUAL :\t{a_telur:g}
-ACHIVE :\t{format_persen(ach_telur)}
-*8.TOYS* :\t
-TARGET :\t{t_toys:g}
-ACTUAL :\t{a_toys:g}
-ACHIVE :\t{format_persen(ach_toys)}
-*HOTWHEELS BASIC*\t
-TARGET :\t{t_hw:g}
-ACTUAL :\t{a_hw:g}
-ACHIVE :\t{format_persen(ach_hw)}
-*9.DJOY* :\t
-TARGET :\t{t_djoy:g}
-ACTUAL :\t{a_djoy:g}
-ACHIVE :\t{format_persen(ach_djoy)}
-*10.UNIPIN*\t
-TARGET :\t{t_unipin:g}
-ACTUAL :\t{a_unipin:g}
-ACHIVE :\t{format_persen(ach_unipin)}
-*11.SUEEGERR*\t
-TARGET :\t{t_sueegerr:g}
-ACTUAL :\t{a_sueegerr:g}
-ACHIVE :\t{format_persen(ach_sueegerr)}
-*12.FOKUS JSM*\t
-TARGET :\t{t_fjsm:g}
-ACTUAL :\t{a_fjsm:g}
-ACHIVE :\t{format_persen(ach_fjsm)}
-*13.BEANSPOT*\t
-*RTD*\t
-TARGET :\t{t_rtd:g}
-ACTUAL :\t{a_rtd:g}
-ACHIVE :\t{format_persen(ach_rtd)}
-*ONIGIRI*\t
-TARGET :\t{t_oni:g}
-ACTUAL :\t{a_oni:g}
-ACHIVE :\t{format_persen(ach_oni)}
-AVG/TOKO :\t{format_persen(avg_toko)}
---------------------------------\t
-*ECOMMERCE*\t
-*14.EVOUCHER*\t
-TARGET :\t{format_rupiah(t_ev)}
-ACTUAL :\t{format_rupiah(a_ev)}
-ACHIVE :\t{format_persen(ach_ev)}
-*15.FEE BASED*\t
-TARGET :\t{format_rupiah(t_fb)}
-ACTUAL :\t{format_rupiah(a_fb)}
-ACHIVE :\t{format_persen(ach_fb)}
-
-*TERIMA KASIH*"""
+    # Bangun teks output
+    output_text = (
+        "*PERFORMANCE & FOCUS CABANG CIKOKOL*\t\n"
+        f"TGL : \t{format_tanggal_id(tgl)}\n\n"
+        f"KODE : {kode}\n"
+        f"TOKO : {toko}\n\n"
+        "*REVENUE*\t\n"
+        "*1.NET SALES*\t\n"
+        f"TARGET :\t{format_rupiah(target_sales)}\n"
+        f"ACTUAL :\t{format_rupiah(actual_sales)}\n"
+        f"ACHIVE :\t{format_persen(sales_achive)}\n"
+        f"GAP TO TARGET :\t{format_rupiah(sales_gap)}\n\n"
+        "*2.PSM*\t\n"
+        f"*{week_psm}*\t\n"
+        f"TARGET :\t{t_psm:g}\n"
+        f"ACTUAL :\t{a_psm:g}\n"
+        f"ACHIVE :\t{format_persen(ach_psm)}\n\n"
+        "*3.PWP*\t\n"
+        f"*{periode_pwp}*\t\n"
+        f"TARGET :\t{t_pwp:g}\n"
+        f"ACTUAL :\t{a_pwp:g}\n"
+        f"ACHIVE :\t{format_persen(ach_pwp)}\n\n"
+        "*4.SERTIS*\t\n"
+        f"*{periode_sertis}*\t\n"
+        f"TARGET :\t{t_sertis:g}\n"
+        f"ACTUAL :\t{a_sertis:g}\n"
+        f"ACHIVE :\t{format_persen(ach_sertis)}\n"
+        "--------------------------------\t\n"
+        "*INVENTORY*\t\n"
+        "*5.PL*\t\n"
+        f"BUDGET ( 0,14% ) Rp :\t{format_rupiah(b_pl)}\n"
+        f"ACTUAL Rp :\t{format_rupiah(a_pl)}\n"
+        "*6.BR,BKE*\t\n"
+        f"BUDGET (0,30) Rp :\t{format_rupiah(b_br)}\n"
+        f"ACTUAL Rp :\t{format_rupiah(a_br)}\n"
+        "--------------------------------\t\n"
+        "*FOCUS CABANG*\t\n"
+        "*7.TELUR*\t\n"
+        f"TARGET :\t{t_telur:g}\n"
+        f"ACTUAL :\t{a_telur:g}\n"
+        f"ACHIVE :\t{format_persen(ach_telur)}\n"
+        "*8.TOYS* :\t\n"
+        f"TARGET :\t{t_toys:g}\n"
+        f"ACTUAL :\t{a_toys:g}\n"
+        f"ACHIVE :\t{format_persen(ach_toys)}\n"
+        "*HOTWHEELS BASIC*\t\n"
+        f"TARGET :\t{t_hw:g}\n"
+        f"ACTUAL :\t{a_hw:g}\n"
+        f"ACHIVE :\t{format_persen(ach_hw)}\n"
+        "*9.DJOY* :\t\n"
+        f"TARGET :\t{t_djoy:g}\n"
+        f"ACTUAL :\t{a_djoy:g}\n"
+        f"ACHIVE :\t{format_persen(ach_djoy)}\n"
+        "*10.UNIPIN*\t\n"
+        f"TARGET :\t{t_unipin:g}\n"
+        f"ACTUAL :\t{a_unipin:g}\n"
+        f"ACHIVE :\t{format_persen(ach_unipin)}\n"
+        "*11.SUEEGERR*\t\n"
+        f"TARGET :\t{t_sueegerr:g}\n"
+        f"ACTUAL :\t{a_sueegerr:g}\n"
+        f"ACHIVE :\t{format_persen(ach_sueegerr)}\n"
+        "*12.FOKUS JSM*\t\n"
+        f"TARGET :\t{t_fjsm:g}\n"
+        f"ACTUAL :\t{a_fjsm:g}\n"
+        f"ACHIVE :\t{format_persen(ach_fjsm)}\n"
+        "*13.BEANSPOT*\t\n"
+        "*RTD*\t\n"
+        f"TARGET :\t{t_rtd:g}\n"
+        f"ACTUAL :\t{a_rtd:g}\n"
+        f"ACHIVE :\t{format_persen(ach_rtd)}\n"
+        "*ONIGIRI*\t\n"
+        f"TARGET :\t{t_oni:g}\n"
+        f"ACTUAL :\t{a_oni:g}\n"
+        f"ACHIVE :\t{format_persen(ach_oni)}\n"
+        f"AVG/TOKO :\t{format_persen(avg_toko)}\n"
+        "--------------------------------\t\n"
+        "*ECOMMERCE*\t\n"
+        "*14.EVOUCHER*\t\n"
+        f"TARGET :\t{format_rupiah(t_ev)}\n"
+        f"ACTUAL :\t{format_rupiah(a_ev)}\n"
+        f"ACHIVE :\t{format_persen(ach_ev)}\n"
+        "*15.FEE BASED*\t\n"
+        f"TARGET :\t{format_rupiah(t_fb)}\n"
+        f"ACTUAL :\t{format_rupiah(a_fb)}\n"
+        f"ACHIVE :\t{format_persen(ach_fb)}\n\n"
+        "*TERIMA KASIH*"
+    )
 
     col1, col2 = st.columns(2)
     with col1:
@@ -238,11 +225,8 @@ ACHIVE :\t{format_persen(ach_fb)}
         download_btn = st.button("Siapkan File TXT")
 
     if show_btn:
-        # ✅ Tampilkan sebagai blok kode agar ada tombol Copy
-        st.code(output_text, language="text")
-
-        # (opsional) Tambah text_area juga, biar bisa edit/copy manual
-        st.text_area("Salin/Copy (Menu 1)", value=output_text, height=400)
+        # Tampilkan biasa tanpa menu salin
+        st.text(output_text)
 
     if download_btn:
         st.download_button(
@@ -252,10 +236,7 @@ ACHIVE :\t{format_persen(ach_fb)}
             mime="text/plain",
         )
 
-
-# =========================
-# MENU 2 (kode kamu — tampilkan dengan st.code)
-# =========================
+# ========== MENU 2 ==========
 elif menu.startswith("2"):
     st.subheader("Laporan Sales & Fokus Mkt (Menu 2)")
 
@@ -264,13 +245,8 @@ elif menu.startswith("2"):
     toko = st.text_input("Nama Toko:", value="KE53")
 
     target_data = {
-        "sales": 8378500,
-        "voucher": 378500,
-        "psm": 82,
-        "pwp": 10,
-        "serba": 11,
-        "seger": 33,
-        "newmem": 2
+        "sales": 8378500, "voucher": 378500, "psm": 82,
+        "pwp": 10, "serba": 11, "seger": 33, "newmem": 2
     }
 
     st.subheader("Masukkan Data Aktual")
@@ -291,48 +267,34 @@ elif menu.startswith("2"):
     }
 
     if st.button("Tampilkan Laporan (Menu 2)"):
-        laporan = f"""
-LAPORAN  sales & FOKUS \tMkt
+        laporan = (
+            "LAPORAN  sales & FOKUS \tMkt\n\n"
+            f"SHIFT  : {shift}\n"
+            f"TGL    : {tanggal}\n"
+            f"Toko   : {toko}\n\n"
+            "          TARGET /ACT/ACH%\n\n"
+            f"Sales: {format_ribuan(target_data['sales'])} / {format_ribuan(aktual_data['sales'])} / {hitung_persen(target_data['sales'], aktual_data['sales']):.2f}%\n"
+            f"Voucher: {format_ribuan(target_data['voucher'])} / {format_ribuan(aktual_data['voucher'])} / {hitung_persen(target_data['voucher'], aktual_data['voucher']):.2f}%\n\n"
+            f"PSM: {format_ribuan(target_data['psm'])} / {format_ribuan(aktual_data['psm'])} / {hitung_persen(target_data['psm'], aktual_data['psm']):.2f}%\n"
+            f"PWP: {format_ribuan(target_data['pwp'])} / {format_ribuan(aktual_data['pwp'])} / {hitung_persen(target_data['pwp'], aktual_data['pwp']):.2f}%\n"
+            f"SERBA: {format_ribuan(target_data['serba'])} / {format_ribuan(aktual_data['serba'])} / {hitung_persen(target_data['serba'], aktual_data['serba']):.2f}%\n\n"
+            f"SEGER: {format_ribuan(target_data['seger'])} / {format_ribuan(aktual_data['seger'])} / {hitung_persen(target_data['seger'], aktual_data['seger']):.2f}%\n"
+            f"CEBAN: {format_ribuan(ceban_actual)}\n\n"
+            f"New Member: {format_ribuan(target_data['newmem'])} / {format_ribuan(aktual_data['newmem'])} / {hitung_persen(target_data['newmem'], aktual_data['newmem']):.2f}%\n"
+            f"Kontribusi member report 47: {kontribusi['konstribusi member']}%\n"
+            f"Vcr JsM : {kontribusi['vcr jsm']}\n"
+            f"Vcr susu hebat: {kontribusi['vcr susu hebat']}\n"
+            f"Murah sejagat : {kontribusi['murah sejagat']}\n"
+            f"Indonesia juara: {kontribusi['indonesia juara']}\n"
+            f"Item JSM : {kontribusi['item jsm']}\n\n"
+            "Terimakasih\n"
+        )
+        st.text(laporan)
 
-SHIFT  : {shift}
-TGL    : {tanggal}
-Toko   : {toko}
-                                
-          TARGET /ACT/ACH%
-
-Sales: {format_ribuan(target_data['sales'])} / {format_ribuan(aktual_data['sales'])} / {hitung_persen(target_data['sales'], aktual_data['sales']):.2f}%
-Voucher: {format_ribuan(target_data['voucher'])} / {format_ribuan(aktual_data['voucher'])} / {hitung_persen(target_data['voucher'], aktual_data['voucher']):.2f}%
-
-PSM: {format_ribuan(target_data['psm'])} / {format_ribuan(aktual_data['psm'])} / {hitung_persen(target_data['psm'], aktual_data['psm']):.2f}%
-PWP: {format_ribuan(target_data['pwp'])} / {format_ribuan(aktual_data['pwp'])} / {hitung_persen(target_data['pwp'], aktual_data['pwp']):.2f}%
-SERBA: {format_ribuan(target_data['serba'])} / {format_ribuan(aktual_data['serba'])} / {hitung_persen(target_data['serba'], aktual_data['serba']):.2f}%
-
-SEGER: {format_ribuan(target_data['seger'])} / {format_ribuan(aktual_data['seger'])} / {hitung_persen(target_data['seger'], aktual_data['seger']):.2f}%
-CEBAN: {format_ribuan(ceban_actual)}
-
-New Member: {format_ribuan(target_data['newmem'])} / {format_ribuan(aktual_data['newmem'])} / {hitung_persen(target_data['newmem'], aktual_data['newmem']):.2f}%
-Kontribusi member report 47: {kontribusi['konstribusi member']}%
-Vcr JsM : {kontribusi['vcr jsm']}
-Vcr susu hebat: {kontribusi['vcr susu hebat']}
-Murah sejagat : {kontribusi['murah sejagat']}
-Indonesia juara: {kontribusi['indonesia juara']}
-Item JSM : {kontribusi['item jsm']}
-
-Terimakasih
-"""
-        # ✅ Tampilkan sebagai blok kode agar ada tombol Copy
-        st.code(laporan, language="text")
-
-        # (opsional) Tambah text_area juga
-        st.text_area("Salin/Copy (Menu 2)", value=laporan, height=350)
-
-# =========================
-# MENU 3 (hitung persentase cepat)
-# =========================
+# ========== MENU 3 ==========
 else:
     st.subheader("Menghitung Persentase Cepat")
     targettoko = st.number_input("NILAI TARGET", min_value=0.0, step=0.01)
     actualtoko = st.number_input("NILAI ACTUAL", min_value=0.0, step=0.01)
     persen = hitung_persen(targettoko, actualtoko)
-
     st.write(f"ACHIVE = {format_persen(persen)}")
