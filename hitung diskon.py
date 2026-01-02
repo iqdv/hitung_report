@@ -1,68 +1,81 @@
 
 import streamlit as st
+from datetime import date
 
-# ---------- Utilitas ----------
-def format_rupiah(x: float) -> str:
-    """Format angka ke Rupiah dengan titik sebagai pemisah ribuan."""
-    return "Rp " + f"{x:,.0f}".replace(",", ".")
+# Fungsi bantu
+def hitung_persentase(aktual, target):
+    return (aktual / target * 100) if target else 0
 
-# ---------- Pengaturan Halaman ----------
-st.set_page_config(page_title="FRESA DAPER HITUNG HARGA DISKON", page_icon="💎", layout="centered")
+def format_ribuan(nilai):
+    return f"{nilai:,}".replace(",", ".")
 
-st.title("FRESA DAPER HITUNG HARGA DISKON")
-st.caption("Masukkan harga dan diskon untuk menghitung total bayar dengan mudah.")
+# Judul Aplikasi
+st.title("📊 Laporan Sales & Fokus Mkt")
 
-# ---------- Input ----------
-with st.form("form_diskon"):
-    col1, col2 = st.columns(2)
+# Input Umum
+shift = st.number_input("Shift (1/2/3):", min_value=1, max_value=3, step=1)
+tanggal = date.today()
+toko = st.text_input("Nama Toko:", value="KE53")
 
-    with col1:
-        harga = st.number_input(
-            "HARGA",
-            min_value=0,
-            step=1000,
-            help="Masukkan harga sebelum diskon.",
-            format="%d",
-        )
-    with col2:
-        diskon = st.number_input(
-            "DISKON (%)",
-            min_value=0.0,
-            max_value=100.0,
-            step=1.0,
-            help="Persentase diskon (0–100).",
-        )
+# Target Data
+target_data = {
+    "sales": 8378500,
+    "voucher": 378500,
+    "psm": 82,
+    "pwp": 10,
+    "serba": 11,
+    "seger": 33,
+    "newmem": 2
+}
 
-    submit = st.form_submit_button("Hitung")
+st.subheader("Masukkan Data Aktual")
+aktual_data = {}
+for kategori in target_data:
+    aktual_data[kategori] = st.number_input(f"{kategori.upper()}:", min_value=0, step=1)
 
-# ---------- Perhitungan & Output ----------
-if submit:
-    if harga <= 0:
-        st.error("Harga harus lebih dari 0.")
-    elif not (0 <= diskon <= 100):
-        st.error("Diskon harus di antara 0–100%.")
-    else:
-        nilai_diskon = harga * diskon / 100
-        total = harga - nilai_diskon
+# Input CEBAN
+ceban_actual = st.number_input("CEBAN:", min_value=0, step=1)
 
-        st.success("Perhitungan berhasil!")
+# Kontribusi
+st.subheader("Masukkan Kontribusi")
+kontribusi = {
+    "konstribusi member": st.number_input("Konstribusi member report 47:", min_value=0, step=1),
+    "vcr jsm": st.number_input("Vcr JsM:", min_value=0, step=1),
+    "vcr susu hebat": st.number_input("Vcr susu hebat:", min_value=0, step=1),
+    "murah sejagat": st.number_input("Murah sejagat:", min_value=0, step=1),
+    "indonesia juara": st.number_input("Indonesia juara:", min_value=0, step=1),
+    "item jsm": st.number_input("Item JSM:", min_value=0, step=1)
+}
 
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.metric("Harga Awal", format_rupiah(harga))
-        with c2:
-            st.metric("Diskon", f"{diskon:.0f}%")
-        with c3:
-            st.metric("Potongan", format_rupiah(nilai_diskon))
+# Tombol untuk tampilkan laporan
+if st.button("Tampilkan Laporan"):
+    laporan = f"""
+LAPORAN  sales & FOKUS \tMkt
 
-        st.subheader("Total Bayar")
-        st.markdown(f"### {format_rupiah(total)}")
+SHIFT  : {shift}
+TGL    : {tanggal}
+Toko   : {toko}
+                                
+          TARGET /ACT/ACH%
 
-        with st.expander("Detail Perhitungan"):
-            st.write(f"Harga awal  : {format_rupiah(harga)}")
-            st.write(f"Diskon      : {diskon:.0f}%")
-            st.write(f"Potongan    : {format_rupiah(nilai_diskon)}")
-            st.write(f"Total bayar : **{format_rupiah(total)}**")
+Sales: {format_ribuan(target_data['sales'])} / {format_ribuan(aktual_data['sales'])} / {hitung_persentase(aktual_data['sales'], target_data['sales']):.2f}%
+Voucher: {format_ribuan(target_data['voucher'])} / {format_ribuan(aktual_data['voucher'])} / {hitung_persentase(aktual_data['voucher'], target_data['voucher']):.2f}%
 
+PSM: {format_ribuan(target_data['psm'])} / {format_ribuan(aktual_data['psm'])} / {hitung_persentase(aktual_data['psm'], target_data['psm']):.2f}%
+PWP: {format_ribuan(target_data['pwp'])} / {format_ribuan(aktual_data['pwp'])} / {hitung_persentase(aktual_data['pwp'], target_data['pwp']):.2f}%
+SERBA: {format_ribuan(target_data['serba'])} / {format_ribuan(aktual_data['serba'])} / {hitung_persentase(aktual_data['serba'], target_data['serba']):.2f}%
 
+SEGER: {format_ribuan(target_data['seger'])} / {format_ribuan(aktual_data['seger'])} / {hitung_persentase(aktual_data['seger'], target_data['seger']):.2f}%
+CEBAN: {format_ribuan(ceban_actual)}
 
+New Member: {format_ribuan(target_data['newmem'])} / {format_ribuan(aktual_data['newmem'])} / {hitung_persentase(aktual_data['newmem'], target_data['newmem']):.2f}%
+Kontribusi member report 47: {kontribusi['konstribusi member']}%
+Vcr JsM : {kontribusi['vcr jsm']}
+Vcr susu hebat: {kontribusi['vcr susu hebat']}
+Murah sejagat : {kontribusi['murah sejagat']}
+Indonesia juara: {kontribusi['indonesia juara']}
+Item JSM : {kontribusi['item jsm']}
+
+Terimakasih
+"""
+    st.text(laporan)
